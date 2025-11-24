@@ -122,8 +122,7 @@ def prepare_environment(offline=False):
             run_pip(f'install -r "{modules_file}"', "required modules")
 
         try:
-            xlc_version = "xllamacpp==0.2.4"
-            if REINSTALL_ALL or not is_installed(xlc_version):
+            if REINSTALL_ALL or not is_installed("xllamacpp"):
                 platform_index = {
                     'cu124': 'https://xorbitsai.github.io/xllamacpp/whl/cu124',
                     'cu128': 'https://xorbitsai.github.io/xllamacpp/whl/cu128',
@@ -133,7 +132,7 @@ def prepare_environment(offline=False):
                 }
                 if torch_platform not in platform_index:
                     torch_platform = 'cpu'
-                run_pip(f'install {xlc_version} --index-url {platform_index[torch_platform]}', "XLlamacpp")
+                run_pip(f'install xllamacpp==0.2.2 -U --extra-index-url {platform_index[torch_platform]}', "XLlamacpp")
         except:
             print("WARNING: Failed to install/update llm modules.")
 

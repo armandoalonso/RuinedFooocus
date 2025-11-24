@@ -28,6 +28,7 @@ class PathManager:
         "path_llm": "../models/llm",
         "path_inbox": "../models/inbox",
         "path_presets": "presets",
+        "path_palettes": "../palettes/",
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
@@ -47,6 +48,9 @@ class PathManager:
         self.model_paths = self.get_model_paths()
         self.upscaler_filenames = self.get_model_filenames(
             self.model_paths["upscaler_path"]
+        )
+        self.palette_filenames = self.get_palette_filenames(
+            self.model_paths["palette_path"]
         )
 
         pathdb_folder = "modules/pathdb"
@@ -122,6 +126,7 @@ class PathManager:
             "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
             "inbox_path": self.get_abspath_folder(self.paths["path_inbox"]),
             "preset_path": self.get_abspath_folder(self.paths["path_presets"]),
+            "palette_path": self.get_abspath_folder(self.paths["path_palettes"]),
         }
 
     def get_abspath_folder(self, path):
@@ -182,6 +187,17 @@ class PathManager:
         return map(
             lambda x: (x, str(Path(x).with_suffix('').name)), presets
         )
+
+    def get_palette_filenames(self, folder_path):
+        """Get list of palette PNG files from palettes folder"""
+        folder_path = Path(folder_path)
+        if not folder_path.is_dir():
+            return []
+        filenames = []
+        for path in folder_path.rglob("*.png"):
+            filenames.append(str(path.relative_to(folder_path)))
+        # Return sorted list
+        return sorted(filenames, key=lambda x: x.casefold())
 
 
     def get_diffusers_filenames(self, folder_path, cache=None, isLora=False):

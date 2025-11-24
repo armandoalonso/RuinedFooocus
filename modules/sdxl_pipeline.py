@@ -4,12 +4,10 @@ import os
 import torch
 import traceback
 import math
-import re
 
 import modules.controlnet
 import modules.async_worker as worker
 import modules.prompt_processing as pp
-from modules.facerestore import facerestore
 
 from PIL import Image, ImageOps
 
@@ -126,7 +124,6 @@ class pipeline:
     inference_memory = None
 
     ggml_ops = GGMLOps()
-    facefixer = facerestore()
 
     def get_clip_name(self, shortname):
         # List of short names and default names for different text encoders
@@ -487,8 +484,6 @@ class pipeline:
 
     def textencode(self, id, text, clip_skip):
         update = False
-        text = re.sub("<[^>]*>", "", text) # Don't encode <lora> and things like that
-        text = text.strip(", ")
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
             if clip_skip > 1:
@@ -537,8 +532,6 @@ class pipeline:
         clip_skip = gen_data["clip_skip"]
         input_image = gen_data["input_image"]
         seed = gen_data["seed"] if isinstance(gen_data["seed"], int) else random.randint(1, 2**32)
-        if "<facerestore>" in gen_data.get("positive_prompt", ""):
-            gen_data["facerestore"] = True
         positive_prompt = gen_data["positive_prompt"]
         negative_prompt = gen_data["negative_prompt"]
         controlnet = modules.controlnet.get_settings(gen_data)
@@ -847,19 +840,5 @@ class pipeline:
         shared.shared_cache["prev_image"] = images[0]
         if callback is not None:
             callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
-
-        if gen_data.get("facerestore", False) == True:
-            if callback is not None:
-                worker.add_result(
-                    gen_data["task_id"],
-                    "preview",
-                    (-1, f"Enhancing ...", None)
-                )
-            self.facefixer.load_gfpgan_model()
-            images = [self.facefixer.process(images[0])]
-
-            shared.shared_cache["prev_image"] = images[0]
-            if callback is not None:
-                callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
         return images

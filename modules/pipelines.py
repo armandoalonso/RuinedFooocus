@@ -21,6 +21,11 @@ import modules.hunyuan_video_pipeline as hunyuan_video_pipeline
 import modules.wan_video_pipeline as wan_video_pipeline
 import modules.hashbang_pipeline as hashbang_pipeline
 import modules.ltx_video_pipeline as ltx_video_pipeline
+import modules.pixelize_pipeline as pixelize_pipeline
+import modules.palettize_pipeline as palettize_pipeline
+import modules.quantize_pipeline as quantize_pipeline
+import modules.bitize_pipeline as bitize_pipeline
+import modules.k_centroid_pipeline as k_centroid_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -80,6 +85,41 @@ def update(gen_data):
                 or "rembg" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = rembg_pipeline.pipeline()
+
+        elif cn_type.lower() == "pixelize":
+            if (
+                state["pipeline"] is None
+                or "pixelize" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = pixelize_pipeline.pipeline()
+
+        elif cn_type.lower() == "palettize":
+            if (
+                state["pipeline"] is None
+                or "palettize" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = palettize_pipeline.pipeline()
+
+        elif cn_type.lower() == "quantize":
+            if (
+                state["pipeline"] is None
+                or "quantize" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = quantize_pipeline.pipeline()
+
+        elif cn_type.lower() == "kcentroid":
+            if (
+                state["pipeline"] is None
+                or "kcentroid" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = k_centroid_pipeline.pipeline()
+
+        elif cn_type.lower() == "bitize":
+            if (
+                state["pipeline"] is None
+                or "bitize" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = bitize_pipeline.pipeline()
 
         else:
             baseModel = None

@@ -259,7 +259,7 @@ def generate_clicked(*args):
                 gen_data["base_model_hash"] = preset_data.get("base_model_hash", None)
                 gen_data["loras"] = preset_data["loras"]
         except Exception as e:
-            print(f"WARNING: Failed using preset: {e}")
+            print(f"DEBUG: Failed using preset: {e}")
             traceback.print_exc()
             pass
 
@@ -307,7 +307,7 @@ with shared.gradio_root as block:
                 elem_id="main_view",
                 value="html/init_image.png",
                 height=680,
-                type="filepath",
+                type="pil",
                 visible=True,
                 show_label=False,
                 show_fullscreen_button=True,
@@ -427,10 +427,9 @@ with shared.gradio_root as block:
                         inputs=[main_view, prompt],
                         outputs=[prompt, gallery]
                     )
-                    def load_images_handler(file, prompt):
-                        image = Image.open(file)
+                    def load_images_handler(image, prompt):
                         params = look(image, prompt, gr)
-                        return params, [file]
+                        return params, None
 
         with gr.Column(scale=2) as right_col:
             with gr.Tab(label=t("Setting")):
@@ -443,7 +442,7 @@ with shared.gradio_root as block:
                         preset_image = gr.Image(
                             placeholder="Select or drop preset image here",
                             show_label=False,
-                            type="filepath",
+                            type="pil",
                             interactive=True,
                             sources=['upload'],
                         )
@@ -508,14 +507,14 @@ with shared.gradio_root as block:
                 add_ctrl("cfg", cfg)
                 sampler_name = gr.Dropdown(
                     label=t("Sampler"),
-                    choices=sorted(KSampler.SAMPLERS),
+                    choices=KSampler.SAMPLERS,
                     value=custom_default_values["sampler_name"],
                     visible='hidden',
                 )
                 add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
                     label=t("Scheduler"),
-                    choices=sorted(KSampler.SCHEDULERS),
+                    choices=KSampler.SCHEDULERS,
                     value=custom_default_values["scheduler"],
                     visible='hidden',
                 )
@@ -1302,7 +1301,11 @@ with shared.gradio_root as block:
                 model_tab: gr.update(visible=True),
             }
         def preset_image_upload(preset_image):
-            path = preset_image
+            # preset_image is now a PIL Image, convert to temp file for preset system
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+                preset_image.save(tmp.name)
+                path = tmp.name
             preset = Path(path).with_suffix('').name
             return {
                 preset_selection: gr.update(value=path),

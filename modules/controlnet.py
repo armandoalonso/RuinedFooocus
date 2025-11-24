@@ -19,11 +19,12 @@ controlnet_models = {
     "upscale": None,
     "rembg": None,
     "faceswap": None,
+    "pixelize": None,
+    "palettize": None,
+    "quantize": None,
+    "kcentroid": None,
+    "bitize": None,
 }
-
-import json
-import os
-import shutil
 
 
 def load_cnsettings():
@@ -87,6 +88,22 @@ def get_settings(gen_data):
             "stop": gen_data["cn_stop"],
             "strength": gen_data["cn_strength"],
             "upscaler": gen_data["cn_upscale"],
+            "downsample_factor": gen_data.get("cn_downsample_factor", 4),
+            "upsample": gen_data.get("cn_upsample", True),
+            "palette_file": gen_data.get("cn_palette_file", "None"),
+            "extract_palette": gen_data.get("cn_extract_palette", False),
+            "palette_name": gen_data.get("cn_palette_name", ""),
+            "palette_colors": gen_data.get("cn_palette_colors", 256),
+            "dither": gen_data.get("cn_dither", False),
+            "prequantize": gen_data.get("cn_prequantize", False),
+            "prequantize_colors": gen_data.get("cn_prequantize_colors", 256),
+            "quantize_mode": gen_data.get("cn_quantize_mode", "fast_octree"),
+            "colors": gen_data.get("cn_quantize_colors", 64),
+            "method": gen_data.get("cn_quantize_method", "Median Cut"),
+            "kmeans": gen_data.get("cn_quantize_kmeans", 0),
+            "downscale_factor": gen_data.get("cn_kcentroid_downscale", 8),
+            "color_clusters": gen_data.get("cn_kcentroid_clusters", 24),
+            "dither_strength": gen_data.get("cn_kcentroid_dither_strength", 0),
         }
     else:
         return (

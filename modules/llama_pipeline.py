@@ -82,7 +82,7 @@ class pipeline:
         return gen_data
 
     def load_base_model(self):
-        localfile = settings.default_settings.get("llama_localfile", "Qwen2.5-7B-Instruct-abliterated-v2.Q4_K_M.gguf")
+        localfile = settings.default_settings.get("llama_localfile", "Llama-3.2-3B-Instruct-uncensored-IQ3_M.gguf")
         llm_path = path_manager.get_folder_file_path(
             "llm",
             localfile,
@@ -94,9 +94,8 @@ class pipeline:
             params = xlc.CommonParams()
             params.prompt = ""
             params.model.path = str(llm_path)
-            params.n_predict = int(settings.default_settings.get("llm_n_predict", -1))
-            params.n_ctx = int(settings.default_settings.get("llm_n_ctx", 2048))
-            params.n_gpu_layers = int(settings.default_settings.get("llm_n_gpu_layers", -1))
+            params.n_predict = 4096
+            params.n_ctx = 1024
             params.ctx_shift = True
             params.cpuparams.n_threads = 4
             params.cpuparams_batch.n_threads = 2
@@ -196,17 +195,11 @@ class pipeline:
                     },
                 },
             ]
-            tool_prompt = "\nUse the tool when you intend to generate an image. You must make sure you use the correct format. The image will be shown to the user.\n"
+            tool_prompt = "\nUse the tool when asked to generate an image. When using the tool you must make sure you use the correct format.\n"
         else:
             tools = None
             tool_prompt = ""
-        chat = [{"role": "system", "content": system_prompt + tool_prompt}]
-        history_len = settings.default_settings.get("llm_chat_history", 7) # Keep the some of the last messages in the discussion.
-        history_len = -history_len if len(h) > history_len else -len(h)
-        for idx in range(history_len, 0):
-            c = h[idx].copy()
-            c['content'] = re.sub('!\\[Image\\]\\([^(]*\\)', '', c['content']) # Remove Image-markdown from LLM input
-            chat.append(c)
+        chat = [{"role": "system", "content": system_prompt + tool_prompt}] + h[-5 if len(h) > 5 else -len(h):] # Keep just the last 5 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
